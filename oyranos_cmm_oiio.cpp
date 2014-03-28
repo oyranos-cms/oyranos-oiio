@@ -346,9 +346,9 @@ oyCMMapi_s * oiioApi4CmmCreate       ( const char        * format )
   oyOptions_s * oy_opts = NULL;
   const char * oforms_options = oiio_read_extra_options;
 
-  oyCMMui_SetUiOptions( ui, oyStringCopy_( oforms_options, oyAllocateFunc_ ), getOFORMS ); 
+  oyCMMui_SetUiOptions( ui, oyStringCopy( oforms_options, oyAllocateFunc_ ), getOFORMS ); 
 
-  oyPointer_Set( backend_context, NULL, "oiio_file_format", oyStringCopy_(format, oyAllocateFunc_),
+  oyPointer_Set( backend_context, NULL, "oiio_file_format", oyStringCopy(format, oyAllocateFunc_),
                  "char*", deAllocData );
 
   oyStringAddPrintf( &registration, AD,
@@ -380,7 +380,7 @@ char * oiioFilterNode_GetText        ( oyFilterNode_s    * node,
 
   tmp = oyOptions_GetText(node_options, oyNAME_NICK);
   if(tmp)
-    t = oyStringCopy_( tmp, allocateFunc );
+    t = oyStringCopy( tmp, allocateFunc );
 
   oyOptions_Release( &node_options );
 
@@ -611,9 +611,16 @@ int      oiioFilter_CmmRun           ( oyFilterPlug_s    * requestor_plug,
 
   /* allocate a buffer to hold the whole image */
   mem_n = spec.width*spec.height*oyDataTypeGetSize(data_type)*spec.nchannels;
-  oyAllocHelper_m_( buf, uint8_t, mem_n, 0, return 1);
-  DBG_NUM2_S("allocate image data: 0x%x size: %d ", (int)(intptr_t)
-              buf, mem_n );
+  if(mem_n)
+  {
+    buf = (uint8_t*) oyAllocateFunc_(mem_n * sizeof(uint8_t));
+    if(!buf)
+      oiio_msg(oyMSG_WARN, (oyStruct_s *) 0, _DBG_FORMAT_ "Could not allocate enough memory.", _DBG_ARGS_);
+      return 1;
+  }
+  if(oy_debug)
+  oiio_msg( oyMSG_DBG, (oyStruct_s *) 0, "allocate image data: 0x%x size: %d ", (int)(intptr_t)
+            buf, mem_n );
 
   /* decode the image into our buffer */
   image->read_image( type, buf );
@@ -1003,7 +1010,7 @@ int  oiioInit                        ( oyStruct_s        * module_info )
     oiio_msg( oyMSG_WARN, module_info, _DBG_FORMAT_ "wrong module info passed in", _DBG_ARGS_ );
 
   /* search the last filter */
-  a = oyCMMinfo_GetApi( (oyCMMinfo_s*) &oiio_cmm_module );
+  a = oiio_cmm_module.api;
   while(a && ((a_tmp = oyCMMapi_GetNext( a )) != 0))
     a = a_tmp;
 
