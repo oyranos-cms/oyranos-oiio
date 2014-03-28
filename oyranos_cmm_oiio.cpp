@@ -51,9 +51,28 @@
 /** The message function pointer to use for messaging. */
 oyMessage_f oiio_msg = oyMessageFunc;
 
+/* Helpers */
+#if defined(__GNUC__)
+# define  OY_DBG_FORMAT_ "%s:%d %s() "
+# define  OY_DBG_ARGS_   strrchr(__FILE__,'/') ? strrchr(__FILE__,'/')+1 : __FILE__,__LINE__,__func__
+#else
+# define  OY_DBG_FORMAT_ "%s:%d "
+# define  OY_DBG_ARGS_   strrchr(__FILE__,'/') ? strrchr(__FILE__,'/')+1 : __FILE__,__LINE__
+#endif
 #define _DBG_FORMAT_ OY_DBG_FORMAT_
 #define _DBG_ARGS_ OY_DBG_ARGS_
+
+extern oyAlloc_f oyAllocateFunc_;
+extern oyDeAlloc_f oyDeAllocateFunc_;
 #define AD oyAllocateFunc_, oyDeAllocateFunc_
+
+/* i18n */
+#ifdef USE_GETTEXT
+# include <libintl.h>
+# define _(text) dgettext( "oyranos_"CMM_NICK, text )
+#else
+# define _(text) text
+#endif
 
 extern "C" {
 int  oiioInit                        ( oyStruct_s        * module_info );
@@ -159,6 +178,7 @@ const char * oiioGetText             ( const char        * select,
   return 0;
 }
 const char *oiio_texts[5] = {"name","copyright","manufacturer","help",0};
+oyIcon_s oiio_icon = {oyOBJECT_ICON_S, 0,0,0, 0,0,0, "oyranos_logo.png"};
 
 /** @instance oiio_cmm_module
  *  @brief    oiio module infos
@@ -178,7 +198,7 @@ oyCMM_s oiio_cmm_module = {
   oyOBJECT_CMM_INFO_S, /**< ::type; the object type */
   0,0,0,               /**< static objects omit these fields */
   CMM_NICK,            /**< ::cmm; the four char filter id */
-  (char*)"0.9.5",      /**< ::backend_version */
+  (char*)"0.9.6",      /**< ::backend_version */
   oiioGetText,         /**< ::getText; UI texts */
   (char**)oiio_texts,  /**< ::texts; list of arguments to getText */
   OYRANOS_VERSION,     /**< ::oy_compatibility; last supported Oyranos CMM API*/
@@ -186,8 +206,8 @@ oyCMM_s oiio_cmm_module = {
   /** ::api; The first filter api structure. */
   NULL,
 
-  /** ::icon; zero terminated list of a icon pyramid */
-  {oyOBJECT_ICON_S, 0,0,0, 0,0,0, (char*)"oyranos_logo.png"},
+  /** ::icon; module icon */
+  &oiio_icon,
   oiioInit
 };
 
@@ -229,15 +249,15 @@ oyCMMapi_s * oiioApi7CmmCreate       ( const char        * format,
     "ext=", /* supported extensions */
     0
   };
-  oyStringAddPrintf_( &ext_, oyAllocateFunc_, oyDeAllocateFunc_, "ext=%s", ext+1 );
+  oyStringAddPrintf( &ext_, oyAllocateFunc_, oyDeAllocateFunc_, "ext=%s", ext+1 );
   properties[4] = ext_;
 
   plugs[0] = plug;
   sockets[0] = socket;
   char * registration = NULL;
 
-  oyStringAddPrintf_( &registration, AD,
-                      OY_OIIO_FILTER_REGISTRATION_BASE"file_read.input_%s._%s._CPU._ACCEL", format, CMM_NICK );
+  oyStringAddPrintf( &registration, AD,
+                     OY_OIIO_FILTER_REGISTRATION_BASE"file_read.input_%s._%s._CPU._ACCEL", format, CMM_NICK );
 
   if(oy_debug >= 2) oiio_msg(oyMSG_DBG, NULL, _DBG_FORMAT_ "registration:%s oiio v%d %s", _DBG_ARGS_,
                              registration,
@@ -331,8 +351,8 @@ oyCMMapi_s * oiioApi4CmmCreate       ( const char        * format )
   oyPointer_Set( backend_context, NULL, "oiio_file_format", oyStringCopy_(format, oyAllocateFunc_),
                  "char*", deAllocData );
 
-  oyStringAddPrintf_( &registration, AD,
-                      OY_OIIO_FILTER_REGISTRATION_BASE"file_read.input_%s._oiio._CPU._ACCEL", format );
+  oyStringAddPrintf( &registration, AD,
+                     OY_OIIO_FILTER_REGISTRATION_BASE"file_read.input_%s._oiio._CPU._ACCEL", format );
 
   oyCMMapi4_s * cmm4 = oyCMMapi4_Create( oiioCMMInit, oiioCMMMessageFuncSet,
                                        registration,
@@ -533,7 +553,7 @@ int      oiioFilter_CmmRun           ( oyFilterPlug_s    * requestor_plug,
   {
     oiio_msg( oyMSG_WARN, (oyStruct_s*)node,
              OY_DBG_FORMAT_ " could not open: %s",
-             OY_DBG_ARGS_, oyNoEmptyString_m_( filename ) );
+             OY_DBG_ARGS_, oyNoEmptyString_m( filename ) );
     return 1;
   }
 
@@ -554,7 +574,7 @@ int      oiioFilter_CmmRun           ( oyFilterPlug_s    * requestor_plug,
   {
     oiio_msg( oyMSG_WARN, (oyStruct_s*)node,
              OY_DBG_FORMAT_ "failed to get info of %s\n%s",
-             OY_DBG_ARGS_, oyNoEmptyString_m_( filename ),
+             OY_DBG_ARGS_, oyNoEmptyString_m( filename ),
              OpenImageIO::geterror().c_str() );
     return FALSE;
   }
@@ -581,7 +601,7 @@ int      oiioFilter_CmmRun           ( oyFilterPlug_s    * requestor_plug,
   {
     oiio_msg( oyMSG_WARN, (oyStruct_s*)node,
              OY_DBG_FORMAT_ "failed to handle %s %s",
-             OY_DBG_ARGS_, oyNoEmptyString_m_( filename ),
+             OY_DBG_ARGS_, oyNoEmptyString_m( filename ),
              spec.format.c_str() );
     image->close();
     return FALSE;
@@ -692,7 +712,7 @@ int      oiioFilter_CmmRun           ( oyFilterPlug_s    * requestor_plug,
       if(oy_debug)
       oiio_msg( oyMSG_DBG, node,
              OY_DBG_FORMAT_ "ICC profile (size: %d): \"%s\"",
-             OY_DBG_ARGS_, proflen, oyNoEmptyString_m_( name ) );
+             OY_DBG_ARGS_, proflen, oyNoEmptyString_m( name ) );
     } else
       if(oy_debug)
         oiio_msg( oyMSG_DBG, node,
@@ -969,7 +989,7 @@ const char * oiio_api4_ui_texts[] = {"name", "category", "help", NULL};
 
 /* OY_OIIO_FILTER_REGISTRATION ----------------------------------------------*/
 
-extern oyCMMinfo_s_ oiio_cmm_module;
+extern oyCMM_s oiio_cmm_module;
 extern "C" {
 int  oiioInit                        ( oyStruct_s        * module_info )
 {
@@ -988,12 +1008,12 @@ int  oiioInit                        ( oyStruct_s        * module_info )
     a = a_tmp;
 
   OpenImageIO::getattribute( std::string("format_list"), &t );
-  formats = oyStringSplit_( t, ',', &formats_n, oyAllocateFunc_ );
+  formats = oyStringSplit( t, ',', &formats_n, oyAllocateFunc_ );
   n = formats_n;
   if(oy_debug)
   oiio_msg( oyMSG_DBG, module_info, _DBG_FORMAT_ "format_list: %s", _DBG_ARGS_, t );
   OpenImageIO::getattribute( std::string("extension_list"), &t );
-  attr = oyStringSplit_( t, ';', &attr_n, oyAllocateFunc_ );
+  attr = oyStringSplit( t, ';', &attr_n, oyAllocateFunc_ );
   if(oy_debug)
   oiio_msg( oyMSG_DBG, module_info, _DBG_FORMAT_ "extension_list: %s", _DBG_ARGS_, t );
 
