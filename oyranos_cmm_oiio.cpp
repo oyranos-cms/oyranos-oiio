@@ -236,8 +236,6 @@ oyCMMapi_s * oiioApi7CmmCreate       ( const char        * format,
                        * socket = oyConnectorImaging_New(0);
   static oyConnectorImaging_s * plugs[2] = {0,0},
                               * sockets[2] = {0,0};
-  int32_t cmm_data_types[7] = {-1,-1,-1,-1,-1,-1,-1};
-
   
   char * ext_ = NULL;
   const char * properties[] =
