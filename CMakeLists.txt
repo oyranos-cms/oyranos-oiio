@@ -1,6 +1,6 @@
 #cmake file for building Kolor-Manager and related modules
  
-PROJECT(oyranos-oiio)
+PROJECT(oyranos_oiio)
 SET( PACKAGE_NAME oyranos-oiio)
 
 SET( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake/modules )
@@ -75,10 +75,12 @@ ADD_CUSTOM_TARGET( debsrc
                 VERBATIM
                 )
 
+SET( OY_MODULE_NAME "_cmm_module" )
+
 # --- extra modules ---
 
 SET( OY_MODULE oiio )
-SET( OY_MODULE_LIB ${PACKAGE_NAME}_${OY_MODULE}${OY_MODULE_NAME} )
+SET( OY_MODULE_LIB ${PROJECT_NAME}${OY_MODULE_NAME} )
 ADD_LIBRARY( ${OY_MODULE_LIB}
              SHARED oyranos_cmm_${OY_MODULE}.cpp iccjpeg.c )
 TARGET_LINK_LIBRARIES ( ${OY_MODULE_LIB}  ${OYRANOS_LIBRARIES} ${OIIO_LIBRARY} ${EXTRA_LIBS} )
