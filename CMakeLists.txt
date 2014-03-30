@@ -45,6 +45,14 @@ ENDIF( OIIO_FOUND )
 
 SET( ${CMAKE_BUILD_TYPE} Debug)
 
+CONFIGURE_FILE(
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/${PACKAGE_NAME}Uninstall.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PACKAGE_NAME}Uninstall.cmake"
+    IMMEDIATE @ONLY)
+
+ADD_CUSTOM_TARGET( uninstall
+	"${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PACKAGE_NAME}Uninstall.cmake")
+
 ADD_CUSTOM_TARGET( dist
                 COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR}/ && git archive --prefix=${PACKAGE_NAME}-${${PACKAGE_NAME}_VERSION}/ --format=tar HEAD > ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}-${${PACKAGE_NAME}_VERSION}.tar
                 COMMAND echo "git sha1:  " | tr -d "\\n" >> ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}-${${PACKAGE_NAME}_VERSION}.tar.bz2.hashsum
