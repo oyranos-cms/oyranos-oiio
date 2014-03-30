@@ -22,12 +22,7 @@
 #include "oyProfiles_s.h"
 
 #include "oyranos_config.h"
-//#include "oyranos_cmm.h"
-//#include "oyranos_debug.h"
 #include "oyranos_definitions.h"
-//#include "oyranos_i18n.h"
-//#include "oyranos_internal.h"
-//#include "oyranos_string.h"
 
 #include <math.h>
 #include <stdarg.h>
@@ -62,10 +57,6 @@ oyMessage_f oiio_msg = oyMessageFunc;
 #define _DBG_FORMAT_ OY_DBG_FORMAT_
 #define _DBG_ARGS_ OY_DBG_ARGS_
 
-extern oyAlloc_f oyAllocateFunc_;
-extern oyDeAlloc_f oyDeAllocateFunc_;
-#define AD oyAllocateFunc_, oyDeAllocateFunc_
-
 /* i18n */
 #ifdef USE_GETTEXT
 # include <libintl.h>
@@ -75,6 +66,10 @@ extern oyDeAlloc_f oyDeAllocateFunc_;
 #endif
 
 extern "C" {
+void* oyAllocateFunc_           (size_t        size);
+void  oyDeAllocateFunc_         (void *        data);
+#define AD oyAllocateFunc_, oyDeAllocateFunc_
+
 int  oiioInit                        ( oyStruct_s        * module_info );
 int      oiioFilter_CmmRun           ( oyFilterPlug_s    * requestor_plug,
                                        oyPixelAccess_s   * ticket );
@@ -613,8 +608,10 @@ int      oiioFilter_CmmRun           ( oyFilterPlug_s    * requestor_plug,
   {
     buf = (uint8_t*) oyAllocateFunc_(mem_n * sizeof(uint8_t));
     if(!buf)
+    {
       oiio_msg(oyMSG_WARN, (oyStruct_s *) 0, _DBG_FORMAT_ "Could not allocate enough memory.", _DBG_ARGS_);
       return 1;
+    }
   }
   if(oy_debug)
   oiio_msg( oyMSG_DBG, (oyStruct_s *) 0, "allocate image data: 0x%x size: %d ", (int)(intptr_t)
