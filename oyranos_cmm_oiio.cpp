@@ -152,13 +152,13 @@ const char * oiioGetText             ( const char        * select,
     else if(type == oyNAME_NAME)
       return _("Kai-Uwe Behrmann");
     else
-      return _("Oyranos project; www: http://www.oyranos.com; support/email: ku.b@gmx.de; sources: http://www.oyranos.com/wiki/index.php?title=Oyranos/Download");
+      return _("Oyranos project; www: http://www.oyranos.com; support/email: ku.b@gmx.de; sources: http://www.oyranos.com/downloads");
   } else if(strcmp(select, "copyright")==0)
   {
          if(type == oyNAME_NICK)
       return _("newBSD");
     else if(type == oyNAME_NAME)
-      return _("Copyright (c) 2013 Kai-Uwe Behrmann; newBSD");
+      return _("Copyright (c) 2014 Kai-Uwe Behrmann; newBSD");
     else
       return _("new BSD license: http://www.opensource.org/licenses/bsd-license.php");
   } else if(strcmp(select, "help")==0)
@@ -166,9 +166,9 @@ const char * oiioGetText             ( const char        * select,
          if(type == oyNAME_NICK)
       return _("help");
     else if(type == oyNAME_NAME)
-      return _("The module loads other CMMs providing a OpenICC CMM API interface.");
+      return _("The module generates a series of file format reader filters.");
     else
-      return _("The module loads CMMs providing a OpenICC CMM API interface.");
+      return _("The module generates a series of file format reader filters. The OpenImageIO library is used to perform the actual reading. This module performs for several formats ICC profile detection, generation and fallback generation.");
   }
   return 0;
 }
