@@ -211,14 +211,16 @@ oyCMM_s oiio_cmm_module = {
 
 #define OY_OIIO_FILTER_REGISTRATION_BASE OY_TOP_SHARED OY_SLASH OY_DOMAIN_INTERNAL OY_SLASH OY_TYPE_STD OY_SLASH
 
+const char *icc_file_formats[5] = {"jpeg","tiff","png",0,0};
+
 /** @instance oiio_api7
  *  @brief    oiio oyCMMapi7_s implementation
  *
  *  a filter providing a CMM filter
  *
  *  @version Oyranos: 0.9.6
- *  @since   2014/03/21 (Oyranos: 0.9.6)
  *  @date    2014/03/21
+ *  @since   2014/03/21 (Oyranos: 0.9.6)
  */
 oyCMMapi_s * oiioApi7CmmCreate       ( const char        * format,
                                        const char        * ext )
@@ -244,6 +246,11 @@ oyCMMapi_s * oiioApi7CmmCreate       ( const char        * format,
   };
   oyStringAddPrintf( &ext_, oyAllocateFunc_, oyDeAllocateFunc_, "ext=%s", ext+1 );
   properties[4] = ext_;
+
+  int pos = 0;
+  while(icc_file_formats[pos])
+    if(strcmp(icc_file_formats[pos++],format))
+      properties[3] = "icc=1"; /* image type ICC profile support */
 
   plugs[0] = plug;
   sockets[0] = socket;
