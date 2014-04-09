@@ -510,6 +510,7 @@ int      oiioFilter_CmmRun           ( oyFilterPlug_s    * requestor_plug,
   size_t  mem_n = 0;   /* needed memory in bytes */
     
   int info_good = 1;
+  int32_t icc_profile_flags = 0;
 
   if(requestor_plug->type_ == oyOBJECT_FILTER_PLUG_S)
   {
@@ -542,6 +543,7 @@ int      oiioFilter_CmmRun           ( oyFilterPlug_s    * requestor_plug,
   {
     oyOptions_s * opts = oyFilterNode_GetOptions( node ,0 );
     filename = oyOptions_FindString( opts, "filename", 0 );
+    oyOptions_FindInt( opts, "icc_profile_flags", 0, &icc_profile_flags );
     oyOptions_Release( &opts );
   }
 
@@ -775,7 +777,7 @@ int      oiioFilter_CmmRun           ( oyFilterPlug_s    * requestor_plug,
         case PHOTOMETRIC_RGB:
         case PHOTOMETRIC_PALETTE:
         case PHOTOMETRIC_YCBCR:
-          p = oyProfile_FromStd( oyASSUMED_RGB, 0 );
+          p = oyProfile_FromStd( oyASSUMED_RGB, icc_profile_flags, 0 );
           break;
         case PHOTOMETRIC_CIELAB:
         {
@@ -820,18 +822,18 @@ int      oiioFilter_CmmRun           ( oyFilterPlug_s    * requestor_plug,
           }
         }
         case PHOTOMETRIC_ICCLAB: /**@todo TODO signiert / unsigniert */
-          p = oyProfile_FromStd( oyASSUMED_LAB, 0 );
+          p = oyProfile_FromStd( oyASSUMED_LAB, icc_profile_flags, 0 );
           break;
         case PHOTOMETRIC_ITULAB:
           p = oyProfile_FromFile( "ITULab.icc", 0, 0 );
           break;
         case PHOTOMETRIC_SEPARATED:
-          p = oyProfile_FromStd( oyASSUMED_CMYK, 0 );
+          p = oyProfile_FromStd( oyASSUMED_CMYK, icc_profile_flags, 0 );
           break;
         case PHOTOMETRIC_MINISWHITE:
         case PHOTOMETRIC_MINISBLACK:
         case PHOTOMETRIC_LOGL:
-          p = oyProfile_FromStd( oyASSUMED_GRAY, 0 );
+          p = oyProfile_FromStd( oyASSUMED_GRAY, icc_profile_flags, 0 );
           break;
       }
       prof = p;
@@ -842,7 +844,7 @@ int      oiioFilter_CmmRun           ( oyFilterPlug_s    * requestor_plug,
 
   /* fallback profile */
   if(!prof)
-    prof = oyProfile_FromStd( profile_type, 0 );
+    prof = oyProfile_FromStd( profile_type, icc_profile_flags, 0 );
 
   if(oy_debug)
     oiio_msg( oyMSG_DBG, (oyStruct_s*)node,
@@ -1035,6 +1037,7 @@ int  oiioInit                        ( oyStruct_s        * module_info )
         oiio_msg( oyMSG_DBG, module_info, _DBG_FORMAT_ "skipping: %s", _DBG_ARGS_, formats[i] );  
       continue;
     }
+
     m = oiioApi4CmmCreate( formats[i] );
     if(!a)
     {
@@ -1050,6 +1053,7 @@ int  oiioInit                        ( oyStruct_s        * module_info )
   for( i = 0; i < n; ++i)
   {
     if(strcmp(formats[i],"pnm") == 0) continue;
+
     m = oiioApi7CmmCreate( formats[i], strchr(attr[i],':') );
     if(!oiio_cmm_module.api)
     {
