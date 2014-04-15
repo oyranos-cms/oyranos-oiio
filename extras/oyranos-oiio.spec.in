@@ -1,0 +1,103 @@
+#
+# spec file for package oyranos-oiio
+#
+# Copyright (c) 2014 Kai-Uwe Behrmann <ku.b@gmx.de>
+#
+# All modifications and additions to the file contributed by third parties
+# remain the property of their copyright owners, unless otherwise agreed
+# upon. The license for this file, and modifications and additions to the
+# file, is the same license as for the pristine package itself (unless the
+# license for the pristine package is not an Open Source License, in which
+# case the license is the MIT License). An "Open Source License" is a
+# license that conforms to the Open Source Definition (Version 1.9)
+# published by the Open Source Initiative.
+
+Version:         @OYRANOS_VERSION_MAJOR@.@OYRANOS_VERSION_MINOR@.@OYRANOS_VERSION_MICRO@
+Source:          %{name}-%{version}.tar.bz2
+Release:         0
+%define syscolordir     /usr/share/color
+%define usercolordir    ~/.config/color
+%define usercolordata   ~/.local/share/color
+%define iccdirname      icc
+%define cmmsubpath      @OY_CMMSUBPATH@
+%define settingsdirname settings
+%define targetdirname   target
+%define pixmapdir       /usr/share/pixmaps
+%define icondir         /usr/share/icons
+%define desktopdir      /usr/share/applications
+
+
+Summary:        OpenImageIO module for Oyranos
+License:        BSD-3-Clause
+Group:          Development/Libraries/Other
+
+Name:           oyranos-oiio
+Url:            http://www.oyranos.org
+BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+Prefix:         %{_prefix}
+
+BuildRequires:  cmake
+BuildRequires:  color-filesystem
+BuildRequires:  desktop-file-utils
+BuildRequires:  gcc-c++
+BuildRequires:  gettext
+BuildRequires:  graphviz
+BuildRequires:  doxygen
+BuildRequires:  libjpeg-devel
+BuildRequires:  liboyranos-devel
+BuildRequires:  libpng-devel
+BuildRequires:  libtiff-devel
+BuildRequires:  OpenImageIO-devel
+BuildRequires:  pkgconfig
+BuildRequires:  xdg-utils
+
+%if 0%{?suse_version} > 1200
+BuildRequires:  libltdl-devel
+%endif
+
+%if 0%{?fedora_version} > 0 && 0%{?rhel_version} < 600
+BuildRequires:  libtool
+BuildRequires:  libtool-ltdl-devel
+%endif
+
+%if 0%{?centos_version} >= 600
+BuildRequires:  libtool
+BuildRequires:  libtool-ltdl-devel
+BuildRequires:  libtool-ltdl
+%endif
+
+%if 0%{?rhel_version} >= 600
+BuildRequires:  libtool
+%endif
+
+
+%description
+Oyranos OIIO is a image I/O module for the Oyranos library.
+It brings Jpeg, Tiff and other image format reading capabilities.
+
+
+%prep
+%autosetup -n %{name}-%{version}
+%cmake
+
+%build
+cd build
+%{__make} VERBOSE=1 %{_smp_mflags} || make
+
+%install
+%cmake_install
+#%find_lang %{name}       # generate a special file list
+
+%post
+
+%postun
+
+%files 
+#-f %{name}.lang
+%defattr(-, root, root)
+%doc AUTHORS COPYING ChangeLog README
+%{_libdir}/%{cmmsubpath}/liboyranos_oiio_cmm_module.*
+
+%changelog
+* Tue Apr 15 2014 Kai-Uwe Behrmann <ku.b@gmx.de> - 0.9.6
+- initial
