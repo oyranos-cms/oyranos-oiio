@@ -1,0 +1,19 @@
+Version 0.9.6
+
+Kai-Uwe Behrmann (15):
+	* [docu]: add README COPYING
+	* [docu]: add AUTHORS file
+	* [oiio]: support icc_profile_flags
+	* [oiio]: mark ICC supported file formats
+	* [oiio]: specify help text
+	* [conf]: detect OpenMP
+	* [conf]: add make uninstall target
+	* [oiio]: fix allocators declaration
+	* [oiio]: fix compile warning
+	* [build]: install into correct library name
+	* [build]: use OYRANOS_CMMSUBPATH
+	* [oiio]: use newly exported oyStringCopy()
+	* [conf]: display Tiff and Jpeg checks
+	* [oiio]: use newly exported utility oyStringXXX functions
+	* [oiio]: initial commit
+
