@@ -703,6 +703,8 @@ int      oiioFilter_CmmRun           ( oyFilterPlug_s    * requestor_plug,
   {
     png_structp png_ptr = 0;
     png_infop info_ptr = 0;
+    int color_type = 0;
+
     png_ptr = png_create_read_struct( PNG_LIBPNG_VER_STRING,
                                     (png_voidp)filename,
                                     oPNGerror, oPNGwarn );
@@ -710,6 +712,7 @@ int      oiioFilter_CmmRun           ( oyFilterPlug_s    * requestor_plug,
     png_init_io( png_ptr, fp );
     png_read_info( png_ptr, info_ptr );
     png_read_update_info( png_ptr, info_ptr );
+    color_type = png_get_color_type( png_ptr, info_ptr );
 #if defined(PNG_iCCP_SUPPORTED)
     png_charp name = 0;
     png_bytep profile = 0;
@@ -725,10 +728,24 @@ int      oiioFilter_CmmRun           ( oyFilterPlug_s    * requestor_plug,
              OY_DBG_FORMAT_ "ICC profile (size: %d): \"%s\"",
              OY_DBG_ARGS_, proflen, oyNoEmptyString_m( name ) );
     } else
+    {
+      switch( color_type )
+      {
+        case PNG_COLOR_TYPE_GRAY:
+        case PNG_COLOR_TYPE_GRAY_ALPHA:
+             profile_type = oyASSUMED_GRAY;
+        break;
+        case PNG_COLOR_TYPE_PALETTE:
+        case PNG_COLOR_TYPE_RGB:
+        case PNG_COLOR_TYPE_RGB_ALPHA:
+        default:
+        break;
+      }
       if(oy_debug)
         oiio_msg( oyMSG_DBG, node,
-             OY_DBG_FORMAT_ "no ICC profile",
+             OY_DBG_FORMAT_ "no embedded ICC profile",
              OY_DBG_ARGS_);
+    }
 #endif
     png_destroy_read_struct( &png_ptr, &info_ptr, (png_infopp)NULL );
 
@@ -777,7 +794,7 @@ int      oiioFilter_CmmRun           ( oyFilterPlug_s    * requestor_plug,
         case PHOTOMETRIC_RGB:
         case PHOTOMETRIC_PALETTE:
         case PHOTOMETRIC_YCBCR:
-          p = oyProfile_FromStd( oyASSUMED_RGB, icc_profile_flags, 0 );
+          profile_type = oyASSUMED_RGB;
           break;
         case PHOTOMETRIC_CIELAB:
         {
@@ -822,18 +839,18 @@ int      oiioFilter_CmmRun           ( oyFilterPlug_s    * requestor_plug,
           }
         }
         case PHOTOMETRIC_ICCLAB: /**@todo TODO signiert / unsigniert */
-          p = oyProfile_FromStd( oyASSUMED_LAB, icc_profile_flags, 0 );
+          profile_type = oyASSUMED_LAB;
           break;
         case PHOTOMETRIC_ITULAB:
           p = oyProfile_FromFile( "ITULab.icc", 0, 0 );
           break;
         case PHOTOMETRIC_SEPARATED:
-          p = oyProfile_FromStd( oyASSUMED_CMYK, icc_profile_flags, 0 );
+          profile_type = oyASSUMED_CMYK;
           break;
         case PHOTOMETRIC_MINISWHITE:
         case PHOTOMETRIC_MINISBLACK:
         case PHOTOMETRIC_LOGL:
-          p = oyProfile_FromStd( oyASSUMED_GRAY, icc_profile_flags, 0 );
+          profile_type = oyASSUMED_GRAY;
           break;
       }
       prof = p;
