@@ -56,6 +56,34 @@ IF(OPENMP_FOUND)
   SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
 ENDIF(OPENMP_FOUND)
 
+# i18n
+FIND_PACKAGE( GetText )
+MESSAGE( "GetText: ${GETTEXT_FOUND}" )
+IF( GETTEXT_FOUND )
+  SET( USE_GETTEXT TRUE )
+ENDIF()
+
+IF( GETTEXT_FOUND )
+  SET(_potFile ${CMAKE_SOURCE_DIR}/po/${PACKAGE_NAME}.pot)
+  #SET( _xgettext_option_list --language=C --keyword=_ --keyword=N_ --keyword=C_:1c,2 --keyword=NC_:1c,2 -s --package-name=${PROJECT_NAME} --package-version=${OYRANOS_VERSION_MAJOR}.${OYRANOS_VERSION_MINOR} )
+  SET( _xgettext_option_list --add-comments --keyword=gettext --flag=gettext:1:pass-c-format --keyword=_ --flag=_:1:pass-c-format --keyword=N_ --flag=N_:1:pass-c-format  --copyright-holder='Kai-Uwe Behrmann'  --msgid-bugs-address='ku.b@gmx.de' --from-code=utf-8 --package-name=${PROJECT_NAME} --package-version=${${PROJECT_NAME}_MAJOR_VERSION}.${${PROJECT_NAME}_MINOR_VERSION} )
+  SET( XGETTEXT_CMD xgettext )
+  FILE( GLOB SRC_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+        *.c *.cpp
+      )
+
+  ADD_CUSTOM_COMMAND(OUTPUT ${_potFile}
+    COMMAND ${XGETTEXT_CMD} ${_xgettext_option_list} -o ${_potFile} ${SRC_FILES}
+    DEPENDS ${SRC_FILES}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMENT "Extract translatable messages to ${_potFile}"
+  )
+
+  SET( LINGUAS po/cs.po po/de.po po/eo.po po/eu.po po/fr.po )
+  # compile translations always to have them ready for installation
+  GETTEXT_CREATE_TRANSLATIONS( ${_potFile} ALL ${LINGUAS} )
+ENDIF()
+
 
 SET( ${CMAKE_BUILD_TYPE} Debug)
 

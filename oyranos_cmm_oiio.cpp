@@ -245,6 +245,8 @@ oyCMMapi_s * oiioApi7CmmCreate       ( const char        * format,
     0
   };
   oyStringAddPrintf( &ext_, oyAllocateFunc_, oyDeAllocateFunc_, "ext=%s", ext+1 );
+  if(strcmp(format,"tiff") == 0)
+    oyStringAddPrintf( &ext_, oyAllocateFunc_, oyDeAllocateFunc_, ",sti" );
   properties[4] = ext_;
 
   int pos = 0;
@@ -389,6 +391,7 @@ char * oiioFilterNode_GetText        ( oyFilterNode_s    * node,
 
 #define A(long_text) oyStringAdd_( &tmp, long_text, AD )
 
+/* TODO */
 int                oiioGetOFORMS     ( oyCMMapiFilter_s  * module,
                                        oyOptions_s       * oy_opts,
                                        char             ** ui_text,
@@ -892,18 +895,18 @@ int      oiioFilter_CmmRun           ( oyFilterPlug_s    * requestor_plug,
   for (size_t i = 0; i < spec.extra_attribs.size(); ++i)
   {
     const OpenImageIO::ParamValue &p (spec.extra_attribs[i]);
-    printf (" \%s: ", p.name().c_str());
+    fprintf ( stderr, " \%s: ", p.name().c_str());
     if (p.type() == OpenImageIO::TypeDesc::STRING)
-      printf ("\"\%s\"", *(const char **)p.data());
+      fprintf ( stderr, "\"\%s\"", *(const char **)p.data());
     else if (p.type() == OpenImageIO::TypeDesc::FLOAT)
-      printf ("\%g", *(const float *)p.data());
+      fprintf ( stderr, "\%g", *(const float *)p.data());
     else if (p.type() == OpenImageIO::TypeDesc::INT)
-      printf ("\%d", *(const int *)p.data());
+      fprintf ( stderr, "\%d", *(const int *)p.data());
     else if (p.type() == OpenImageIO::TypeDesc::UINT)
-      printf ("\%u", *(const unsigned int *)p.data());
+      fprintf ( stderr, "\%u", *(const unsigned int *)p.data());
     else
-      printf ("<unknown data type>");
-    printf("\n");
+      fprintf ( stderr, "<unknown data type>");
+    fprintf( stderr, "\n");
   }
 
   oyOptions_Release( &tags );
@@ -966,7 +969,7 @@ const char * oiioApi4UiGetText2      ( const char        * select,
     else if(type == oyNAME_NAME)
       return _("Option \"filename\", a valid filename of a existing image");
     else if(type == oyNAME_DESCRIPTION)
-      return _("The Option \"filename\" should contain a valid filename to read the png data from. If the file does not exist, a error will occure.");
+      return _("The Option \"filename\" should contain a valid filename to read the image data from. If the file does not exist, a error will occure.");
   }
   else if(strcmp(select,"category") == 0)
   {
