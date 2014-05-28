@@ -651,7 +651,7 @@ int      oiioFilter_CmmRun           ( oyFilterPlug_s    * requestor_plug,
 
     (void) jpeg_read_header (&cinfo, TRUE);
 
-    int lIsITUFax = prepareColour( &cinfo );
+    int lIsITUFax = IsITUFax( &cinfo );
 
     jpeg_start_decompress (&cinfo);
 

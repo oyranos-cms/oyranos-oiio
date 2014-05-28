@@ -293,11 +293,20 @@ int read_icc_profile2(j_decompress_ptr cinfo,
          profile_name = oyGetDefaultProfileName (oyASSUMED_GRAY, malloc);
          break;
     case JCS_RGB:
-         /* guesswork */
-         if(strstr(filename,"_MG_")) /* Canon RAW AdobeRGB */
-           profile_name = strdup("compatibleWithAdobeRGB1998.icc");
-         else
-           profile_name = oyGetDefaultProfileName (oyASSUMED_RGB, malloc);
+         if(lIsITUFax)
+         {
+           profile_name = strdup("ITULab.icc");
+           if( !oyCheckProfile (profile_name, 0) )
+             prof_mem = (char*)oyGetProfileBlock( profile_name, &size, malloc );
+           else if(!oyCheckProfile ("ITUFAX.ICM", 0) )
+             prof_mem = (char*)oyGetProfileBlock( "ITUFAX.ICM", &size, malloc );
+         } else {
+           /* guesswork */
+           if(strstr(filename,"_MG_")) /* Canon RAW AdobeRGB */
+             profile_name = strdup("compatibleWithAdobeRGB1998.icc");
+           else
+             profile_name = oyGetDefaultProfileName (oyASSUMED_RGB, malloc);
+         }
          break;
     case JCS_CMYK:
          profile_name = oyGetDefaultProfileName (oyASSUMED_CMYK, malloc);
@@ -314,6 +323,10 @@ int read_icc_profile2(j_decompress_ptr cinfo,
     case JCS_YCCK:
          break;
     }
+
+    if(!profile_name)
+      profile_name = oyGetDefaultProfileName (oyASSUMED_RGB, malloc);
+
     if( !oyCheckProfile (profile_name, 0) )
       prof_mem = (char*)oyGetProfileBlock( profile_name, &size, malloc );
 
@@ -329,42 +342,17 @@ int read_icc_profile2(j_decompress_ptr cinfo,
   return 0;
 }
 
-int prepareColour(j_decompress_ptr cinfo)
-{
-  int lIsITUFax = IsITUFax( cinfo );
-
-  if(lIsITUFax)
-  {
-    cinfo->out_color_space = JCS_YCbCr;  // Fake to don't touch
-  }
-
-  return lIsITUFax;
-}
-
 void ycbcr2rgb (uint8_t * rgb, uint8_t * ycbcr)
 {
   float
-  R = rgb[0] / 255.,
-  G = rgb[1] / 255.,
-  B = rgb[2] / 255.,
-#if 1
-  Ey =  0.299*R + 0.587*G + 0.114*B,
-  Er =  0.500*R - 0.419*G - 0.081*B,
-  Eb = -0.169*R - 0.331*G + 0.500*B,
-
-  Cb =  0.713*(R - Ey)+.5,
-  Cr =  0.564*(B - Ey)+.5;
-
-  Ey = (Ey - 16/235.) * 220/255.;
-  Cb =  .5;
-  Cr = 0.5;
-#else
+  R = rgb[0],
+  G = rgb[1],
+  B = rgb[2],
   Ey =   0.29900 * R + 0.58700 * G + 0.11400 * B,
   Cb = (-0.16874 * R - 0.33126 * G + 0.50000 * B) + 128.,
   Cr = ( 0.50000 * R - 0.41869 * G - 0.08131 * B) + 128.;
-#endif
 
-  ycbcr[0] = Ey*255.+.5;
-  ycbcr[1] = Cb*255.+.5;
-  ycbcr[2] = Cr*255.+.5;
+  ycbcr[0] = Ey;
+  ycbcr[1] = Cb;
+  ycbcr[2] = Cr;
 }

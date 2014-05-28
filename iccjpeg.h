@@ -86,7 +86,6 @@ extern boolean read_icc_profile (j_decompress_ptr cinfo,
        jpeg_save_markers(&cinfo, JPEG_APP0 + m, 0xFFFF);
    and jpeg_read_header
  */
-int prepareColour(j_decompress_ptr cinfo);
 /* recheck after read_icc_profile */
 int read_icc_profile2(j_decompress_ptr cinfo,
                       const char * filename,
