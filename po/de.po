@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: de\n"
 "Report-Msgid-Bugs-To: ku.b@gmx.de\n"
-"POT-Creation-Date: 2014-04-22 07:25+0200\n"
+"POT-Creation-Date: 2014-06-02 06:11+0200\n"
 "PO-Revision-Date: 2005-08-13 17:35+0200\n"
 "Last-Translator: Kai-Uwe Behrmann\n"
 "Language-Team:  <ku.b@gmx.de>\n"
@@ -32,7 +32,7 @@ msgid "Copyright (c) 2014 Kai-Uwe Behrmann; newBSD"
 msgstr ""
 
 #. The following strings must match the categories for a menu entry.
-#: oyranos_cmm_oiio.cpp:978
+#: oyranos_cmm_oiio.cpp:988
 msgid "Files"
 msgstr "Dateien"
 
@@ -40,11 +40,11 @@ msgstr "Dateien"
 msgid "Kai-Uwe Behrmann"
 msgstr ""
 
-#: oyranos_cmm_oiio.cpp:963
+#: oyranos_cmm_oiio.cpp:973
 msgid "Load Image File Object"
 msgstr "Lade Bilddateiobjekt"
 
-#: oyranos_cmm_oiio.cpp:969
+#: oyranos_cmm_oiio.cpp:979
 msgid "Option \"filename\", a valid filename of a existing image"
 msgstr "Option \"filename\", ein gültiger Dateiname eines existierenden Bildes"
 
@@ -56,11 +56,11 @@ msgstr ""
 "Oyranos Projekt: www: http://www.oyranos.com; Support/email: ku.b@gmx.de; "
 "Quellen: http://www.oyranos.com/downloads"
 
-#: oyranos_cmm_oiio.cpp:978
+#: oyranos_cmm_oiio.cpp:988
 msgid "Read"
 msgstr "Lese"
 
-#: oyranos_cmm_oiio.cpp:971
+#: oyranos_cmm_oiio.cpp:981
 msgid ""
 "The Option \"filename\" should contain a valid filename to read the image "
 "data from. If the file does not exist, a error will occure."
@@ -78,8 +78,10 @@ msgid ""
 "library is used to perform the actual reading. This module performs for "
 "several formats ICC profile detection, generation and fallback generation."
 msgstr ""
-"Das Modul erzeugt einen Satz von Filtern zum Lesen von Dateiformaten. "
-"Die OpenImageIO Bibliothek wird benutz für das Lesen. Das Modul erkennt für einige Formate eingebettete ICC Profile, kann sie generieren oder alternative Farbprofile erzeugen."
+"Das Modul erzeugt einen Satz von Filtern zum Lesen von Dateiformaten. Die "
+"OpenImageIO Bibliothek wird benutz für das Lesen. Das Modul erkennt für "
+"einige Formate eingebettete ICC Profile, kann sie generieren oder "
+"alternative Farbprofile erzeugen."
 
 #: oyranos_cmm_oiio.cpp:167
 msgid "help"
@@ -97,7 +99,7 @@ msgstr ""
 msgid "oy"
 msgstr ""
 
-#: oyranos_cmm_oiio.cpp:961
+#: oyranos_cmm_oiio.cpp:971
 msgid "read"
 msgstr "lese"
 

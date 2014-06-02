@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: oyranos_oiio 0.9\n"
 "Report-Msgid-Bugs-To: ku.b@gmx.de\n"
-"POT-Creation-Date: 2014-04-22 07:25+0200\n"
+"POT-Creation-Date: 2014-06-02 06:24+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -66,29 +66,29 @@ msgid ""
 "several formats ICC profile detection, generation and fallback generation."
 msgstr ""
 
-#: oyranos_cmm_oiio.cpp:961
+#: oyranos_cmm_oiio.cpp:971
 msgid "read"
 msgstr ""
 
-#: oyranos_cmm_oiio.cpp:963
+#: oyranos_cmm_oiio.cpp:973
 msgid "Load Image File Object"
 msgstr ""
 
-#: oyranos_cmm_oiio.cpp:969
+#: oyranos_cmm_oiio.cpp:979
 msgid "Option \"filename\", a valid filename of a existing image"
 msgstr ""
 
-#: oyranos_cmm_oiio.cpp:971
+#: oyranos_cmm_oiio.cpp:981
 msgid ""
 "The Option \"filename\" should contain a valid filename to read the image "
 "data from. If the file does not exist, a error will occure."
 msgstr ""
 
 #. The following strings must match the categories for a menu entry.
-#: oyranos_cmm_oiio.cpp:978
+#: oyranos_cmm_oiio.cpp:988
 msgid "Files"
 msgstr ""
 
-#: oyranos_cmm_oiio.cpp:978
+#: oyranos_cmm_oiio.cpp:988
 msgid "Read"
 msgstr ""

@@ -621,12 +621,12 @@ int      oiioFilter_CmmRun           ( oyFilterPlug_s    * requestor_plug,
     buf = (uint8_t*) oyAllocateFunc_(mem_n * sizeof(uint8_t));
     if(!buf)
     {
-      oiio_msg(oyMSG_WARN, (oyStruct_s *) 0, _DBG_FORMAT_ "Could not allocate enough memory.", _DBG_ARGS_);
+      oiio_msg(oyMSG_WARN, (oyStruct_s *) node, _DBG_FORMAT_ "Could not allocate enough memory.", _DBG_ARGS_);
       return 1;
     }
   }
   if(oy_debug)
-  oiio_msg( oyMSG_DBG, (oyStruct_s *) 0, "allocate image data: 0x%x size: %d ", (int)(intptr_t)
+  oiio_msg( oyMSG_DBG, (oyStruct_s *) node, _DBG_FORMAT_ "allocate image data: 0x%x size: %d ", _DBG_ARGS_, (int)(intptr_t)
             buf, mem_n );
 
   /* decode the image into our buffer */
@@ -645,21 +645,26 @@ int      oiioFilter_CmmRun           ( oyFilterPlug_s    * requestor_plug,
 
     jpeg_stdio_src (&cinfo, fp);
 
-    setup_read_icc_profile(&cinfo);  
     for (int m = 0; m < 16; m++)
       jpeg_save_markers(&cinfo, JPEG_APP0 + m, 0xFFFF);
 
     (void) jpeg_read_header (&cinfo, TRUE);
 
-    int lIsITUFax = IsITUFax( &cinfo );
+    unsigned int len = 0;
+    int lIsITUFax = jpeg_get_marker_size( &cinfo, JPEG_APP0+1, (JOCTET*)"G3FAX", 5, &len ) == 0;
 
     jpeg_start_decompress (&cinfo);
 
 
     unsigned char * icc = NULL;
-    unsigned int len = 0;
 
-    if (read_icc_profile(&cinfo, &icc, &len))
+    if( jpeg_get_marker_size( &cinfo, JPEG_APP0+2, (JOCTET*)"ICC_PROFILE", 12, &len ) == 0 )
+    {
+      icc = (unsigned char*) malloc(len);
+      jpeg_get_marker_data( &cinfo, JPEG_APP0+2, (JOCTET*)"ICC_PROFILE", 12, len, (JOCTET*)icc );
+    }
+
+    if (icc && len)
     { if(oy_debug)
       oiio_msg( oyMSG_DBG, (oyStruct_s*)node, OY_DBG_FORMAT_ "jpeg embedded profile found: %d", OY_DBG_ARGS_, len);
     } else if (read_icc_profile2(&cinfo, filename, &icc, &len))
@@ -670,7 +675,11 @@ int      oiioFilter_CmmRun           ( oyFilterPlug_s    * requestor_plug,
       oiio_msg( oyMSG_DBG, (oyStruct_s*)node, OY_DBG_FORMAT_ "jpeg no profile found", OY_DBG_ARGS_);
 
     if(icc && len)
+    {
       prof = oyProfile_FromMem( len, icc, 0, 0 );
+      free(icc); icc = NULL;
+      len = 0;
+    }
 
     icColorSpaceSignature csp = (icColorSpaceSignature) oyProfile_GetSignature(prof,oySIGNATURE_COLOR_SPACE);
     if(csp == icSigCmykData)
