@@ -1,5 +1,5 @@
 /*
- * iccprofile.c
+ * jpegmarkers.c
  *
  * This file provides code to read and write International Color Consortium
  * (ICC) device profiles embedded in JFIF JPEG image files.  The ICC has
@@ -15,9 +15,10 @@
  * with ICC profiles exceeding 64K bytes in size.  If you need to do that,
  * change all the "unsigned int" variables to "INT32".  You'll also need
  * to find a malloc() replacement that can allocate more than 64K.
+ *
+ * The code and API was transformed to support any kind of APP markers.
  */
 
-#include "oyranos.h"                    /* define somewhere uint8_t */
 
 #include "jpegmarkers.h"
 #include <stdlib.h>			/* define malloc() */
@@ -39,6 +40,7 @@
 #define APP2_MARKER  (JPEG_APP0 + 2)	/* JPEG marker code for ICC */
 #define MAX_BYTES_IN_MARKER  65533	/* maximum data len of a JPEG marker */
 #define MAX_DATA_BYTES_IN_MARKER  (MAX_BYTES_IN_MARKER - marker_name_length)
+#define MAX_APP2_SEQ_NO  255		/* sufficient since marker numbers are bytes */
 
 /*
  * This routine writes the given APP2 data into a JPEG file.
@@ -154,7 +156,6 @@ int jpeg_count_markers   (j_decompress_ptr cinfo,
                               int * markers_count)
 {
   jpeg_saved_marker_ptr marker;
-#define MAX_SEQ_NO  255		/* sufficient since marker numbers are bytes */
 
   *markers_count = 0;
 
@@ -171,7 +172,6 @@ int jpeg_get_marker      (j_decompress_ptr cinfo,
                               jpeg_saved_marker_ptr *marker_return)
 {
   jpeg_saved_marker_ptr marker;
-#define MAX_SEQ_NO  255		/* sufficient since marker numbers are bytes */
   int marker_pos = 0;
 
 
@@ -194,7 +194,6 @@ int jpeg_get_marker_name (j_decompress_ptr cinfo,
                               int *marker_name_length)
 {
   jpeg_saved_marker_ptr marker;
-#define MAX_SEQ_NO  255		/* sufficient since marker numbers are bytes */
   int marker_pos = 0;
 
 
@@ -234,9 +233,8 @@ int jpeg_get_marker_size (j_decompress_ptr cinfo,
   int num_markers = 0;
   int seq_no;
   unsigned int total_length;
-#define MAX_SEQ_NO  255		/* sufficient since marker numbers are bytes */
-  char marker_present[MAX_SEQ_NO+1];	  /* 1 if marker found */
-  unsigned int data_length[MAX_SEQ_NO+1]; /* size of profile data in marker */
+  char marker_present[MAX_APP2_SEQ_NO+1];	  /* 1 if marker found */
+  unsigned int data_length[MAX_APP2_SEQ_NO+1]; /* size of profile data in marker */
   int marker_overhead = (marker_code == (JPEG_APP0 + 2)) ? marker_name_length + 2 : marker_name_length;
 
   *data_len = 0;
@@ -245,7 +243,7 @@ int jpeg_get_marker_size (j_decompress_ptr cinfo,
    * any APP0+2 markers and verifies the consistency of the marker numbering.
    */
 
-  for (seq_no = 1; seq_no <= MAX_SEQ_NO; seq_no++)
+  for (seq_no = 1; seq_no <= MAX_APP2_SEQ_NO; seq_no++)
     marker_present[seq_no] = 0;
 
 
@@ -305,17 +303,16 @@ int jpeg_get_marker_data (j_decompress_ptr cinfo,
   int seq_no;
   unsigned int total_length,
                pos;
-#define MAX_SEQ_NO  255		/* sufficient since marker numbers are bytes */
-  char marker_present[MAX_SEQ_NO+1];	  /* 1 if marker found */
-  unsigned int data_length[MAX_SEQ_NO+1]; /* size of profile data in marker */
-  unsigned int data_offset[MAX_SEQ_NO+1]; /* offset for data in marker */
+  char marker_present[MAX_APP2_SEQ_NO+1];	  /* 1 if marker found */
+  unsigned int data_length[MAX_APP2_SEQ_NO+1]; /* size of profile data in marker */
+  unsigned int data_offset[MAX_APP2_SEQ_NO+1]; /* offset for data in marker */
   int marker_overhead = (marker_code == (JPEG_APP0 + 2)) ? marker_name_length + 2 : marker_name_length;
 
   /* This first pass over the saved markers discovers whether there are
    * any APP0+2 markers and verifies the consistency of the marker numbering.
    */
 
-  for (seq_no = 1; seq_no <= MAX_SEQ_NO; seq_no++)
+  for (seq_no = 1; seq_no <= MAX_APP2_SEQ_NO; seq_no++)
     marker_present[seq_no] = 0;
 
 
@@ -387,82 +384,3 @@ int jpeg_get_marker_data (j_decompress_ptr cinfo,
 
 /*------------------------------------------------------------------------*/
 /* added from Tom Lanes jpegicc.c and modified by ku.b */
-
-int read_icc_profile2(j_decompress_ptr cinfo,
-                      const char * filename,
-                      JOCTET **icc_data_ptr,
-                      unsigned int *icc_data_len)
-{
-  unsigned int len;
-  int lIsITUFax = jpeg_get_marker_size( cinfo, JPEG_APP0+1, (JOCTET*)"G3FAX", 5, &len ) == 0;
-
-  {
-    char * profile_name = 0;
-    char * prof_mem = 0;
-    size_t size = 0;
-    switch(cinfo->out_color_space)
-    {
-    case JCS_GRAYSCALE:
-         profile_name = oyGetDefaultProfileName (oyASSUMED_GRAY, malloc);
-         break;
-    case JCS_RGB:
-         if(lIsITUFax)
-         {
-           profile_name = strdup("ITULab.icc");
-           if( !oyCheckProfile (profile_name, 0) )
-             prof_mem = (char*)oyGetProfileBlock( profile_name, &size, malloc );
-           else if(!oyCheckProfile ("ITUFAX.ICM", 0) )
-             prof_mem = (char*)oyGetProfileBlock( "ITUFAX.ICM", &size, malloc );
-         } else {
-           /* guesswork */
-           if(strstr(filename,"_MG_")) /* Canon RAW AdobeRGB */
-             profile_name = strdup("compatibleWithAdobeRGB1998.icc");
-           else
-             profile_name = oyGetDefaultProfileName (oyASSUMED_RGB, malloc);
-         }
-         break;
-    case JCS_CMYK:
-         profile_name = oyGetDefaultProfileName (oyASSUMED_CMYK, malloc);
-         break;
-    case JCS_YCbCr:
-         if(lIsITUFax)
-           profile_name = strdup("ITULab.icc");
-         if( !oyCheckProfile (profile_name, 0) )
-           prof_mem = (char*)oyGetProfileBlock( profile_name, &size, malloc );
-         else if(!oyCheckProfile ("ITUFAX.ICM", 0) )
-           prof_mem = (char*)oyGetProfileBlock( "ITUFAX.ICM", &size, malloc );
-         break;
-    case JCS_UNKNOWN:
-    case JCS_YCCK:
-         break;
-    }
-
-    if( !oyCheckProfile (profile_name, 0) )
-      prof_mem = (char*)oyGetProfileBlock( profile_name, &size, malloc );
-
-    *icc_data_ptr = (JOCTET*)prof_mem;
-    *icc_data_len = size;
-
-    if(profile_name) free( profile_name );
-
-    if(size && prof_mem)
-      return 1;
-  }
-
-  return 0;
-}
-
-void ycbcr2rgb (uint8_t * rgb, uint8_t * ycbcr)
-{
-  float
-  R = rgb[0],
-  G = rgb[1],
-  B = rgb[2],
-  Ey =   0.29900 * R + 0.58700 * G + 0.11400 * B,
-  Cb = (-0.16874 * R - 0.33126 * G + 0.50000 * B) + 128.,
-  Cr = ( 0.50000 * R - 0.41869 * G - 0.08131 * B) + 128.;
-
-  ycbcr[0] = Ey;
-  ycbcr[1] = Cb;
-  ycbcr[2] = Cr;
-}

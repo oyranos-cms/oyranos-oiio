@@ -479,6 +479,87 @@ oyProfile_s * profileFromMatrix( double pandg[9], const char * name  )
   return p;
 }
 
+
+int read_icc_profile2(j_decompress_ptr cinfo,
+                      const char * filename,
+                      JOCTET **icc_data_ptr,
+                      unsigned int *icc_data_len)
+{
+  unsigned int len;
+  int lIsITUFax = jpeg_get_marker_size( cinfo, JPEG_APP0+1, (JOCTET*)"G3FAX", 5, &len ) == 0;
+
+  {
+    char * profile_name = 0;
+    char * prof_mem = 0;
+    size_t size = 0;
+    switch(cinfo->out_color_space)
+    {
+    case JCS_GRAYSCALE:
+         profile_name = oyGetDefaultProfileName (oyASSUMED_GRAY, malloc);
+         break;
+    case JCS_RGB:
+         if(lIsITUFax)
+         {
+           profile_name = strdup("ITULab.icc");
+           if( !oyCheckProfile (profile_name, 0) )
+             prof_mem = (char*)oyGetProfileBlock( profile_name, &size, malloc );
+           else if(!oyCheckProfile ("ITUFAX.ICM", 0) )
+             prof_mem = (char*)oyGetProfileBlock( "ITUFAX.ICM", &size, malloc );
+         } else {
+           /* guesswork */
+           if(strstr(filename,"_MG_")) /* Canon RAW AdobeRGB */
+             profile_name = strdup("compatibleWithAdobeRGB1998.icc");
+           else
+             profile_name = oyGetDefaultProfileName (oyASSUMED_RGB, malloc);
+         }
+         break;
+    case JCS_CMYK:
+         profile_name = oyGetDefaultProfileName (oyASSUMED_CMYK, malloc);
+         break;
+    case JCS_YCbCr:
+         if(lIsITUFax)
+           profile_name = strdup("ITULab.icc");
+         if( !oyCheckProfile (profile_name, 0) )
+           prof_mem = (char*)oyGetProfileBlock( profile_name, &size, malloc );
+         else if(!oyCheckProfile ("ITUFAX.ICM", 0) )
+           prof_mem = (char*)oyGetProfileBlock( "ITUFAX.ICM", &size, malloc );
+         break;
+    case JCS_UNKNOWN:
+    case JCS_YCCK:
+         break;
+    }
+
+    if( !oyCheckProfile (profile_name, 0) )
+      prof_mem = (char*)oyGetProfileBlock( profile_name, &size, malloc );
+
+    *icc_data_ptr = (JOCTET*)prof_mem;
+    *icc_data_len = size;
+
+    if(profile_name) free( profile_name );
+
+    if(size && prof_mem)
+      return 1;
+  }
+
+  return 0;
+}
+
+void ycbcr2rgb (uint8_t * rgb, uint8_t * ycbcr)
+{
+  float
+  R = rgb[0],
+  G = rgb[1],
+  B = rgb[2],
+  Ey =   0.29900 * R + 0.58700 * G + 0.11400 * B,
+  Cb = (-0.16874 * R - 0.33126 * G + 0.50000 * B) + 128.,
+  Cr = ( 0.50000 * R - 0.41869 * G - 0.08131 * B) + 128.;
+
+  ycbcr[0] = Ey;
+  ycbcr[1] = Cb;
+  ycbcr[2] = Cr;
+}
+
+
 /** Function oiioFilter_CmmRun
  *  @brief   implement oyCMMFilter_GetNext_f()
  *
