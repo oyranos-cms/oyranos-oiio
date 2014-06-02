@@ -19,7 +19,7 @@
 
 #include "oyranos.h"                    /* define somewhere uint8_t */
 
-#include "iccjpeg.h"
+#include "jpegmarkers.h"
 #include <stdlib.h>			/* define malloc() */
 #include <string.h>			/* define strstr() */
 

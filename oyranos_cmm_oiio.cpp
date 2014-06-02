@@ -32,7 +32,7 @@
 #include <ctype.h>   /* isspace() */
 
 #include <OpenImageIO/imageio.h>
-#include "iccjpeg.h"
+#include "jpegmarkers.h"
 #include <png.h>
 #include <tiffconf.h>
 #include <tiffio.h>
