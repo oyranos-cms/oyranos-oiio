@@ -1,6 +1,11 @@
 /*
  * jpegmarkers.c
  *
+ * Copyright (C) 1991-1996, Thomas G. Lane.
+ * Modified 2014 by Kai-Uwe Behrmann
+ * This file is part of the Independent JPEG Group's software.
+ * For conditions of distribution and use, see the accompanying README file.
+ *
  * This file provides code to read and write International Color Consortium
  * (ICC) device profiles embedded in JFIF JPEG image files.  The ICC has
  * defined a standard format for including such data in JPEG "APP2" markers.
