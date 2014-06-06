@@ -480,7 +480,7 @@ oyProfile_s * profileFromMatrix( double pandg[9], const char * name  )
 }
 
 
-int read_icc_profile2(j_decompress_ptr cinfo,
+int select_icc_profile(j_decompress_ptr cinfo,
                       const char * filename,
                       JOCTET **icc_data_ptr,
                       unsigned int *icc_data_len)
@@ -505,12 +505,28 @@ int read_icc_profile2(j_decompress_ptr cinfo,
              prof_mem = (char*)oyGetProfileBlock( profile_name, &size, malloc );
            else if(!oyCheckProfile ("ITUFAX.ICM", 0) )
              prof_mem = (char*)oyGetProfileBlock( "ITUFAX.ICM", &size, malloc );
+
+           cinfo->out_color_space = JCS_YCbCr;  // do'nt convert colors
          } else {
            /* guesswork */
-           if(strstr(filename,"_MG_")) /* Canon RAW AdobeRGB */
+           const char * fn = strrchr( filename, OY_SLASH_C );
+           if(fn)
+             fn += 1;
+           else
+             fn = filename;
+
+           if(fn[0] == '_') /* Canon RAW AdobeRGB */
              profile_name = strdup("compatibleWithAdobeRGB1998.icc");
            else
-             profile_name = oyGetDefaultProfileName (oyASSUMED_RGB, malloc);
+           {
+             profile_name = strdup("YCC profile - supports extended sRGB range PRELIMINARY 1-4-2002.icc");
+             if( !oyCheckProfile (profile_name, 0) )
+             {
+               prof_mem = (char*)oyGetProfileBlock( profile_name, &size, malloc );
+               cinfo->out_color_space = JCS_YCbCr;  // do'nt convert colors
+             } else
+               profile_name = oyGetDefaultProfileName (oyASSUMED_RGB, malloc);
+           }
          }
          break;
     case JCS_CMYK:
@@ -523,6 +539,8 @@ int read_icc_profile2(j_decompress_ptr cinfo,
            prof_mem = (char*)oyGetProfileBlock( profile_name, &size, malloc );
          else if(!oyCheckProfile ("ITUFAX.ICM", 0) )
            prof_mem = (char*)oyGetProfileBlock( "ITUFAX.ICM", &size, malloc );
+         else
+           profile_name = strdup("YCC profile - supports extended sRGB range PRELIMINARY 1-4-2002.icc");
          break;
     case JCS_UNKNOWN:
     case JCS_YCCK:
@@ -542,21 +560,6 @@ int read_icc_profile2(j_decompress_ptr cinfo,
   }
 
   return 0;
-}
-
-void ycbcr2rgb (uint8_t * rgb, uint8_t * ycbcr)
-{
-  float
-  R = rgb[0],
-  G = rgb[1],
-  B = rgb[2],
-  Ey =   0.29900 * R + 0.58700 * G + 0.11400 * B,
-  Cb = (-0.16874 * R - 0.33126 * G + 0.50000 * B) + 128.,
-  Cr = ( 0.50000 * R - 0.41869 * G - 0.08131 * B) + 128.;
-
-  ycbcr[0] = Ey;
-  ycbcr[1] = Cb;
-  ycbcr[2] = Cr;
 }
 
 
@@ -711,6 +714,7 @@ int      oiioFilter_CmmRun           ( oyFilterPlug_s    * requestor_plug,
             buf, mem_n );
 
   /* decode the image into our buffer */
+  if(strcmp(image->format_name(),"jpeg") != 0)
   image->read_image( type, buf );
 
 
@@ -732,11 +736,6 @@ int      oiioFilter_CmmRun           ( oyFilterPlug_s    * requestor_plug,
     (void) jpeg_read_header (&cinfo, TRUE);
 
     unsigned int len = 0;
-    int lIsITUFax = jpeg_get_marker_size( &cinfo, JPEG_APP0+1, (JOCTET*)"G3FAX", 5, &len ) == 0;
-
-    jpeg_start_decompress (&cinfo);
-
-
     unsigned char * icc = NULL;
 
     if( jpeg_get_marker_size( &cinfo, JPEG_APP0+2, (JOCTET*)"ICC_PROFILE", 12, &len ) == 0 )
@@ -748,7 +747,7 @@ int      oiioFilter_CmmRun           ( oyFilterPlug_s    * requestor_plug,
     if (icc && len)
     { if(oy_debug)
       oiio_msg( oyMSG_DBG, (oyStruct_s*)node, OY_DBG_FORMAT_ "jpeg embedded profile found: %d", OY_DBG_ARGS_, len);
-    } else if (read_icc_profile2(&cinfo, filename, &icc, &len))
+    } else if (select_icc_profile(&cinfo, filename, &icc, &len))
     { if(oy_debug)
       oiio_msg( oyMSG_DBG, (oyStruct_s*)node, OY_DBG_FORMAT_ "jpeg default profile selected: %d", OY_DBG_ARGS_, len);
     } else
@@ -760,6 +759,18 @@ int      oiioFilter_CmmRun           ( oyFilterPlug_s    * requestor_plug,
       prof = oyProfile_FromMem( len, icc, 0, 0 );
       free(icc); icc = NULL;
       len = 0;
+    }
+
+    jpeg_start_decompress (&cinfo);
+
+
+    while (cinfo.output_scanline < cinfo.output_height) {
+    /* jpeg_read_scanlines expects an array of pointers to scanlines.
+     * Here the array is only one element long, but you could ask for
+     * more than one scanline at a time if that's more convenient.
+     */
+    JSAMPROW b = &buf[(cinfo.output_width * cinfo.output_components)*cinfo.output_scanline];
+    jpeg_read_scanlines(&cinfo, &b, 1);
     }
 
     icColorSpaceSignature csp = (icColorSpaceSignature) oyProfile_GetSignature(prof,oySIGNATURE_COLOR_SPACE);
@@ -774,22 +785,9 @@ int      oiioFilter_CmmRun           ( oyFilterPlug_s    * requestor_plug,
         for(i = 0; i < n; ++i)
           d[i] = 255 - d[i];
       }
-    } else
-    if(lIsITUFax)
-    {
-      int n = spec.width * spec.height;
-      if(data_type == oyUINT8)
-      {
-        uint8_t * d = (uint8_t*)buf;
-        int i;
-#pragma omp parallel for private(i)
-        for(i = 0; i < n; ++i)
-          ycbcr2rgb( &d[i*spec.nchannels], &d[i*spec.nchannels]);
-      }
     }
-   
-
-    //jpeg_finish_decompress (&cinfo);
+ 
+    jpeg_finish_decompress (&cinfo);
     jpeg_destroy_decompress (&cinfo);
 
   } else if(strcmp(image->format_name(),"png") == 0)
