@@ -873,7 +873,7 @@ int      oiioFilter_CmmRun           ( oyFilterPlug_s    * requestor_plug,
       { case PHOTOMETRIC_LOGLUV:
           { /* creating an special profile with equal energy white point */
             double primaries_and_gamma[9] = {
-            1.0,0.0, 0.0,1.0, 0.0,0.0, 0.5,0.5, 1.0};
+            1.0,0.0, 0.0,1.0, 0.0,0.0, 0.333,0.333, 1.0};
 
             p = profileFromMatrix( primaries_and_gamma, "XYZ D*E" );
 
