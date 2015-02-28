@@ -928,6 +928,19 @@ int      oiioFilter_CmmRun           ( oyFilterPlug_s    * requestor_plug,
     }
 
     TIFFClose(tif);
+  } else if(strcmp(image->format_name(),"openexr") == 0 ||
+            strcmp(image->format_name(),"hdr") == 0)
+  {
+          { /* creating an special profile with equal energy white point */
+            double primaries_and_gamma[9] = {
+            0.64,0.33, 0.30,0.60, 0.15,0.05, 0.3127,0.3290, 1.0};
+
+            prof = profileFromMatrix( primaries_and_gamma, "linear Rec709-sRGB D65" );
+
+            oiio_msg( oyMSG_DBG, node,
+                      OY_DBG_FORMAT_ "set linear Rec709-sRGB D65",
+                      OY_DBG_ARGS_);
+          }
   }
 
   /* fallback profile */
@@ -1119,14 +1132,17 @@ int  oiioInit                        ( oyStruct_s        * module_info )
   /* append new items */
   for( i = 0; i < n; ++i)
   {
-    if(strcmp(formats[i],"pnm") == 0)
+    const char * format = formats[i];
+    if(strcmp(format,"pnm") == 0)
     {
       if(oy_debug)
-        oiio_msg( oyMSG_DBG, module_info, _DBG_FORMAT_ "skipping: %s", _DBG_ARGS_, formats[i] );  
+        oiio_msg( oyMSG_DBG, module_info, _DBG_FORMAT_ "skipping: %s", _DBG_ARGS_, format );  
       continue;
     }
 
-    m = oiioApi4CmmCreate( formats[i] );
+    if(strcmp(format,"openexr") == 0) format = "exr";
+
+    m = oiioApi4CmmCreate( format );
     if(!a)
     {
       oiio_cmm_module.api = m;
@@ -1140,7 +1156,9 @@ int  oiioInit                        ( oyStruct_s        * module_info )
   }
   for( i = 0; i < n; ++i)
   {
+    const char * format = formats[i];
     if(strcmp(formats[i],"pnm") == 0) continue;
+    if(strcmp(format,"openexr") == 0) format = "exr";
 
     m = oiioApi7CmmCreate( formats[i], strchr(attr[i],':') );
     if(!oiio_cmm_module.api)
