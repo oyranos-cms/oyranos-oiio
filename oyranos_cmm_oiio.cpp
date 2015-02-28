@@ -907,26 +907,6 @@ int      oiioFilter_CmmRun           ( oyFilterPlug_s    * requestor_plug,
               d[i*spec.nchannels+1] -= 32768;
               d[i*spec.nchannels+2] -= 32768;
             }
-          } else
-          if(data_type == oyFLOAT)
-          {
-            float * f = (float*)buf;
-            for(int i = 0; i < n; ++i)
-            {
-              f[i*spec.nchannels+0] /= 100.;
-              f[i*spec.nchannels+1] /= 256.+.5;
-              f[i*spec.nchannels+2] /= 256.+.5;
-            }
-          } else
-          if(data_type == oyDOUBLE)
-          {
-            double * d = (double*)buf;
-            for(int i = 0; i < n; ++i)
-            {
-              d[i*spec.nchannels+0] /= 100.;
-              d[i*spec.nchannels+1] /= 256.+.5;
-              d[i*spec.nchannels+2] /= 256.+.5;
-            }
           }
         }
         case PHOTOMETRIC_ICCLAB: /**@todo TODO signiert / unsigniert */
