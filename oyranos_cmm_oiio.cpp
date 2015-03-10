@@ -438,7 +438,7 @@ void oPNGwarn( png_structp png, const char * text )
              OY_DBG_ARGS_, text );
 }
 
-oyProfile_s * profileFromMatrix( double pandg[9], const char * name  )
+oyProfile_s * profileFromMatrix( double pandg[9], const char * name, int32_t icc_profile_flags  )
 {
   oyProfile_s * p = 0;
             oyOption_s * primaries = oyOption_FromRegistration( "//" 
@@ -450,6 +450,9 @@ oyProfile_s * profileFromMatrix( double pandg[9], const char * name  )
                           * result = 0;
 
             int pos = 0;
+
+            oyOptions_SetFromInt( &opts, "///icc_profile_flags", icc_profile_flags,
+                                  0, OY_CREATE_NEW ); 
 
             /* red */
             oyOption_SetFromDouble( primaries, pandg[pos], pos, 0 ); pos++;
@@ -875,7 +878,7 @@ int      oiioFilter_CmmRun           ( oyFilterPlug_s    * requestor_plug,
             double primaries_and_gamma[9] = {
             1.0,0.0, 0.0,1.0, 0.0,0.0, 0.333,0.333, 1.0};
 
-            p = profileFromMatrix( primaries_and_gamma, "XYZ D*E" );
+            p = profileFromMatrix( primaries_and_gamma, "XYZ D*E", icc_profile_flags );
 
             oiio_msg( oyMSG_DBG, node,
                       OY_DBG_FORMAT_ "set XYZ Profil with D*E",
@@ -935,7 +938,7 @@ int      oiioFilter_CmmRun           ( oyFilterPlug_s    * requestor_plug,
             double primaries_and_gamma[9] = {
             0.64,0.33, 0.30,0.60, 0.15,0.05, 0.3127,0.3290, 1.0};
 
-            prof = profileFromMatrix( primaries_and_gamma, "linear Rec709-sRGB D65" );
+            prof = profileFromMatrix( primaries_and_gamma, "linear Rec709-sRGB D65", icc_profile_flags );
 
             oiio_msg( oyMSG_DBG, node,
                       OY_DBG_FORMAT_ "set linear Rec709-sRGB D65",

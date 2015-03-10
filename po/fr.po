@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ICC Examin 0.41\n"
 "Report-Msgid-Bugs-To: ku.b@gmx.de\n"
-"POT-Creation-Date: 2015-02-28 14:46+0100\n"
+"POT-Creation-Date: 2015-03-10 22:03+0100\n"
 "PO-Revision-Date: 2006-06-29 19:31+0200\n"
 "Last-Translator: Pascal LACROIX <lacroixpascal at vfemail.net>\n"
 "Language-Team: ALL <ku.b@gmx.de>\n"
@@ -29,7 +29,7 @@ msgid "Copyright (c) 2014 Kai-Uwe Behrmann; newBSD"
 msgstr ""
 
 #. The following strings must match the categories for a menu entry.
-#: oyranos_cmm_oiio.cpp:1047
+#: oyranos_cmm_oiio.cpp:1063
 #, fuzzy
 msgid "Files"
 msgstr "Fichier"
@@ -38,11 +38,11 @@ msgstr "Fichier"
 msgid "Kai-Uwe Behrmann"
 msgstr ""
 
-#: oyranos_cmm_oiio.cpp:1032
+#: oyranos_cmm_oiio.cpp:1048
 msgid "Load Image File Object"
 msgstr ""
 
-#: oyranos_cmm_oiio.cpp:1038
+#: oyranos_cmm_oiio.cpp:1054
 msgid "Option \"filename\", a valid filename of a existing image"
 msgstr ""
 
@@ -52,11 +52,11 @@ msgid ""
 "sources: http://www.oyranos.com/downloads"
 msgstr ""
 
-#: oyranos_cmm_oiio.cpp:1047
+#: oyranos_cmm_oiio.cpp:1063
 msgid "Read"
 msgstr ""
 
-#: oyranos_cmm_oiio.cpp:1040
+#: oyranos_cmm_oiio.cpp:1056
 msgid ""
 "The Option \"filename\" should contain a valid filename to read the image "
 "data from. If the file does not exist, a error will occure."
@@ -90,7 +90,7 @@ msgstr ""
 msgid "oy"
 msgstr ""
 
-#: oyranos_cmm_oiio.cpp:1030
+#: oyranos_cmm_oiio.cpp:1046
 msgid "read"
 msgstr ""
 

@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: oyranos\n"
 "Report-Msgid-Bugs-To: ku.b@gmx.de\n"
-"POT-Creation-Date: 2015-02-28 14:46+0100\n"
+"POT-Creation-Date: 2015-03-10 22:03+0100\n"
 "PO-Revision-Date: 2012-10-19 15:10+0100\n"
 "Last-Translator: Milan Knížek <knizek@volny.cz>\n"
 "Language-Team: Czech <cs@li.org>\n"
@@ -31,7 +31,7 @@ msgid "Copyright (c) 2014 Kai-Uwe Behrmann; newBSD"
 msgstr "Copyright (c) 2009 Kai-Uwe Behrmann; newBSD"
 
 #. The following strings must match the categories for a menu entry.
-#: oyranos_cmm_oiio.cpp:1047
+#: oyranos_cmm_oiio.cpp:1063
 msgid "Files"
 msgstr "Soubory"
 
@@ -39,11 +39,11 @@ msgstr "Soubory"
 msgid "Kai-Uwe Behrmann"
 msgstr "Kai-Uwe Behrmann"
 
-#: oyranos_cmm_oiio.cpp:1032
+#: oyranos_cmm_oiio.cpp:1048
 msgid "Load Image File Object"
 msgstr "Načíst objekt obrázkového souboru"
 
-#: oyranos_cmm_oiio.cpp:1038
+#: oyranos_cmm_oiio.cpp:1054
 #, fuzzy
 msgid "Option \"filename\", a valid filename of a existing image"
 msgstr "Volba \"filename\", platný název souboru existujícího PNG obrázku"
@@ -58,12 +58,12 @@ msgstr ""
 "zdrojové soubory: http://www.oyranos.com/wiki/index.php?title=Oyranos/"
 "Download"
 
-#: oyranos_cmm_oiio.cpp:1047
+#: oyranos_cmm_oiio.cpp:1063
 #, fuzzy
 msgid "Read"
 msgstr "Číst PNG"
 
-#: oyranos_cmm_oiio.cpp:1040
+#: oyranos_cmm_oiio.cpp:1056
 #, fuzzy
 msgid ""
 "The Option \"filename\" should contain a valid filename to read the image "
@@ -100,7 +100,7 @@ msgstr "newBSD"
 msgid "oy"
 msgstr ""
 
-#: oyranos_cmm_oiio.cpp:1030
+#: oyranos_cmm_oiio.cpp:1046
 msgid "read"
 msgstr ""
 
