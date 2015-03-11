@@ -440,16 +440,20 @@ void oPNGwarn( png_structp png, const char * text )
 
 oyProfile_s * profileFromMatrix( double pandg[9], const char * name, int32_t icc_profile_flags  )
 {
-  oyProfile_s * p = 0;
+  oyProfile_s * p = oyProfile_FromName(name, icc_profile_flags, NULL);
+
+  if(!p)
+  {
             oyOption_s * primaries = oyOption_FromRegistration( "//" 
                     OY_TYPE_STD 
                     "/color_matrix."
                     "redx_redy_greenx_greeny_bluex_bluey_whitex_whitey_gamma",
                     0);
-              oyOptions_s * opts = oyOptions_New(0),
-                          * result = 0;
+            oyOptions_s * opts = oyOptions_New(0),
+                        * result = 0;
 
             int pos = 0;
+
 
             oyOptions_SetFromInt( &opts, "///icc_profile_flags", icc_profile_flags,
                                   0, OY_CREATE_NEW ); 
@@ -479,6 +483,10 @@ oyProfile_s * profileFromMatrix( double pandg[9], const char * name, int32_t icc
             oyProfile_AddTagText( p, icSigCopyrightTag, "ICC License 2011");
             oyOptions_Release( &result );
             oyOptions_Release( &opts );
+
+            oyProfile_Install( p, NULL );
+  }
+
   return p;
 }
 
@@ -564,7 +572,6 @@ int select_icc_profile(j_decompress_ptr cinfo,
 
   return 0;
 }
-
 
 /** Function oiioFilter_CmmRun
  *  @brief   implement oyCMMFilter_GetNext_f()
@@ -878,11 +885,17 @@ int      oiioFilter_CmmRun           ( oyFilterPlug_s    * requestor_plug,
             double primaries_and_gamma[9] = {
             1.0,0.0, 0.0,1.0, 0.0,0.0, 0.333,0.333, 1.0};
 
-            p = profileFromMatrix( primaries_and_gamma, "XYZ D*E", icc_profile_flags );
+            char * name = NULL;
+            oyStringAddPrintf( &name, oyAllocateFunc_, oyDeAllocateFunc_,
+                               "XYZ DE%s",
+                               (icc_profile_flags & OY_ICC_VERSION_2) ? " v2" : " v4" );
+            p = profileFromMatrix( primaries_and_gamma, name, icc_profile_flags );
 
             oiio_msg( oyMSG_DBG, node,
-                      OY_DBG_FORMAT_ "set XYZ Profil with D*E",
-                      OY_DBG_ARGS_);
+                      OY_DBG_FORMAT_ "set %s",
+                      OY_DBG_ARGS_, name);
+
+            oyDeAllocateFunc_( name );
           }
           break;
         case PHOTOMETRIC_RGB:
@@ -938,11 +951,17 @@ int      oiioFilter_CmmRun           ( oyFilterPlug_s    * requestor_plug,
             double primaries_and_gamma[9] = {
             0.64,0.33, 0.30,0.60, 0.15,0.05, 0.3127,0.3290, 1.0};
 
-            prof = profileFromMatrix( primaries_and_gamma, "linear Rec709-sRGB D65", icc_profile_flags );
+            char * name = NULL;
+            oyStringAddPrintf( &name, oyAllocateFunc_, oyDeAllocateFunc_,
+                               "sRGB Rec709 linear D65%s",
+                              (icc_profile_flags & OY_ICC_VERSION_2) ? " v2" : " v4" );
+            prof = profileFromMatrix( primaries_and_gamma, name, icc_profile_flags );
 
             oiio_msg( oyMSG_DBG, node,
-                      OY_DBG_FORMAT_ "set linear Rec709-sRGB D65",
-                      OY_DBG_ARGS_);
+                      OY_DBG_FORMAT_ "set %s",
+                      OY_DBG_ARGS_, name);
+
+            oyDeAllocateFunc_( name );
           }
   }
 
