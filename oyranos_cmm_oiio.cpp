@@ -484,7 +484,7 @@ oyProfile_s * profileFromMatrix( double pandg[9], const char * name, int32_t icc
             oyOptions_Release( &result );
             oyOptions_Release( &opts );
 
-            oyProfile_Install( p, NULL );
+            oyProfile_Install( p, oySCOPE_USER, NULL );
   }
 
   return p;
@@ -816,7 +816,7 @@ int      oiioFilter_CmmRun           ( oyFilterPlug_s    * requestor_plug,
     color_type = png_get_color_type( png_ptr, info_ptr );
 #if defined(PNG_iCCP_SUPPORTED)
     png_charp name = 0;
-    png_bytep profile = 0;
+    png_charp profile = 0;
     png_uint_32 proflen = 0;
     int compression = 0;
 
