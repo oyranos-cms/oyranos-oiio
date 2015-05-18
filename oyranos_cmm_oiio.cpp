@@ -211,7 +211,7 @@ oyCMM_s oiio_cmm_module = {
 
 #define OY_OIIO_FILTER_REGISTRATION_BASE OY_TOP_SHARED OY_SLASH OY_DOMAIN_INTERNAL OY_SLASH OY_TYPE_STD OY_SLASH
 
-const char *icc_file_formats[5] = {"jpeg","tiff","png",0,0};
+const char *icc_file_formats[7] = {"jpeg","tiff","png","hdr","exr",0,0};
 
 /** @instance oiio_api7
  *  @brief    oiio oyCMMapi7_s implementation
@@ -1155,7 +1155,8 @@ int  oiioInit                        ( oyStruct_s        * module_info )
   for( i = 0; i < n; ++i)
   {
     const char * format = formats[i];
-    if(strcmp(format,"pnm") == 0)
+    if(strcmp(format,"pnm") == 0 ||
+       strcmp(format,"jpeg") == 0)
     {
       if(oy_debug)
         oiio_msg( oyMSG_DBG, module_info, _DBG_FORMAT_ "skipping: %s", _DBG_ARGS_, format );  
@@ -1179,7 +1180,8 @@ int  oiioInit                        ( oyStruct_s        * module_info )
   for( i = 0; i < n; ++i)
   {
     const char * format = formats[i];
-    if(strcmp(formats[i],"pnm") == 0) continue;
+    if(strcmp(formats[i],"pnm") == 0 ||
+       strcmp(formats[i],"jpeg") == 0) continue;
     if(strcmp(format,"openexr") == 0) format = "exr";
 
     m = oiioApi7CmmCreate( formats[i], strchr(attr[i],':') );
