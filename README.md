@@ -24,9 +24,9 @@ This project wraps OpenImageIO as Oyranos image reader filters.
     $ make install
 
 #### Build Flags
-... are typical cmake flags like CMAKE_C_FLAGS to tune compilation.
+... are typical cmake flags like CMAKE\_C\_FLAGS to tune compilation.
 
-* CMAKE_INSTALL_PREFIX to install into paths and so on. Use on the command 
-  line through -DCMAKE_INSTALL_PREFIX=/my/path .
-* LIB_SUFFIX - allows to append a architecture specific suffix like 
-  LIB_SUFFIX=64 for 64bit non debian style Linux systems.
+* CMAKE\_INSTALL\_PREFIX to install into paths and so on. Use on the command 
+  line through -DCMAKE\_INSTALL\_PREFIX=/my/path .
+* LIB\_SUFFIX - allows to append a architecture specific suffix like 
+  LIB\_SUFFIX=64 for 64bit non debian style Linux systems.
