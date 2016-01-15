@@ -1156,7 +1156,9 @@ int  oiioInit                        ( oyStruct_s        * module_info )
   {
     const char * format = formats[i];
     if(strcmp(format,"pnm") == 0 ||
-       strcmp(format,"jpeg") == 0)
+       strcmp(format,"jpeg") == 0 ||
+       strcmp(format,"png") == 0 ||
+       strcmp(format,"raw") == 0)
     {
       if(oy_debug)
         oiio_msg( oyMSG_DBG, module_info, _DBG_FORMAT_ "skipping: %s", _DBG_ARGS_, format );  
@@ -1180,8 +1182,10 @@ int  oiioInit                        ( oyStruct_s        * module_info )
   for( i = 0; i < n; ++i)
   {
     const char * format = formats[i];
-    if(strcmp(formats[i],"pnm") == 0 ||
-       strcmp(formats[i],"jpeg") == 0) continue;
+    if(strcmp(format,"pnm") == 0 ||
+       strcmp(format,"jpeg") == 0 ||
+       strcmp(format,"png") == 0 ||
+       strcmp(format,"raw") == 0) continue;
     if(strcmp(format,"openexr") == 0) format = "exr";
 
     m = oiioApi7CmmCreate( formats[i], strchr(attr[i],':') );
